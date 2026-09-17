@@ -29,4 +29,9 @@ public class AccountController {
     public List<Account> getAllAccounts() {
         return accountRepository.findAll();
     }
+
+    @GetMapping("user/{userId}")
+    public List<Account> getAccountsByUserId(@PathVariable int userId) {
+        return accountRepository.findByUserId(userId);
+    }
 }
