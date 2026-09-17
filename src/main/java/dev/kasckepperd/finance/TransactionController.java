@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/transactions")
@@ -34,7 +35,10 @@ public class TransactionController {
 
     @PostMapping("/transfer/{accountId}")
     public ResponseEntity makeNewTransfer(@RequestBody TransferRequest request, @PathVariable int accountId) {
-        return transactionService.NewTransfer(request.amount, request.targetAccountId, accountId);
+        transactionService.NewTransfer(request.amount, accountId, request.targetAccountId);
+        return ResponseEntity.ok(
+                Map.of("message", "Transfer successful!")
+        );
     }
 
 

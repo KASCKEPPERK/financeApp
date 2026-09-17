@@ -32,36 +32,34 @@ public class TransactionService {
         throw new IllegalArgumentException("No money!");
     }
 
-    public ResponseEntity NewTransfer(BigDecimal amount, int accountId1, int accountId2) {
+    public void NewTransfer(BigDecimal amount, int accountId1, int accountId2) {
         Account account1 = accountRepository.findById(accountId1).orElseThrow();
         Account account2 = accountRepository.findById(accountId2).orElseThrow();
-        if(account1.getBalance().compareTo(amount) >= 0 && amount.compareTo(BigDecimal.ZERO) > 0) {
-            account1.setBalance(account1.getBalance().subtract(amount));
-            accountRepository.save(account1);
-            account2.setBalance(account2.getBalance().add(amount));
-            accountRepository.save(account2);
-
-            Transaction outgoing = new Transaction();
-            outgoing.setAmount(amount.negate());
-            outgoing.setDescription("Transfer");
-            outgoing.setAccount(account1);
-
-            Transaction incoming = new Transaction();
-            incoming.setAmount(amount);
-            incoming.setDescription("Transfer");
-            incoming.setAccount(account2);
-
-            transactionRepository.save(outgoing);
-            transactionRepository.save(incoming);
-
-            return ResponseEntity.ok(
-                    Map.of("message", "Transfer successful!")
-            );
-
+        if(amount.compareTo(BigDecimal.ZERO) <= 0){
+            throw new IllegalArgumentException("This transfer amount must be greater than zero!");
         }
-        return ResponseEntity.badRequest().body(
-                Map.of("message", "You don't have that amount!")
-        );
+        if(account1.getBalance().compareTo(amount) < 0){
+            throw new IllegalArgumentException("You don't have that amount!");
+        }
+
+        account1.setBalance(account1.getBalance().subtract(amount));
+        accountRepository.save(account1);
+        account2.setBalance(account2.getBalance().add(amount));
+        accountRepository.save(account2);
+
+        Transaction outgoing = new Transaction();
+        outgoing.setAmount(amount.negate());
+        outgoing.setDescription("Transfer");
+        outgoing.setAccount(account1);
+
+        Transaction incoming = new Transaction();
+        incoming.setAmount(amount);
+        incoming.setDescription("Transfer");
+        incoming.setAccount(account2);
+
+        transactionRepository.save(outgoing);
+        transactionRepository.save(incoming);
+
     }
 
     public List<Transaction> ShowTransactions(int accountId) {
