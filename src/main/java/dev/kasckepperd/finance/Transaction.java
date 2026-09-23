@@ -22,4 +22,8 @@ public class Transaction {
     @JoinColumn(name = "account_id",nullable = false)
     private Account account;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
 }

@@ -17,21 +17,21 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
+
     @PostMapping("/service/{accountId}")
-    public Transaction makeNewTransaction(@RequestBody Transaction transaction, @PathVariable int accountId) {
-        return transactionService.NewTransaction(transaction, accountId);
+    public Transaction makeNewTransaction(@RequestBody TransactionRequest request, @PathVariable int accountId) {
+        Transaction transaction = new Transaction();
+        transaction.setAmount(request.amount);
+        transaction.setDescription(request.description);
+        return transactionService.NewTransaction(transaction, accountId,request.categoryId);
     }
+
 
     @GetMapping("/{accountId}/history")
     public List<Transaction> getShowTransactions(@PathVariable int accountId) {
         return transactionService.ShowTransactions(accountId);
     }
 
-    public record TransferRequest(
-            BigDecimal amount,
-            int targetAccountId
-
-    ){}
 
     @PostMapping("/transfer/{accountId}")
     public ResponseEntity makeNewTransfer(@RequestBody TransferRequest request, @PathVariable int accountId) {
@@ -39,6 +39,11 @@ public class TransactionController {
         return ResponseEntity.ok(
                 Map.of("message", "Transfer successful!")
         );
+    }
+
+    @GetMapping("/{accountId}/analytics")
+    public List<CategorySpending> getSpenddingAllCategories(@PathVariable int accountId) {
+        return transactionService.getSpendingbyCategories(accountId);
     }
 
 

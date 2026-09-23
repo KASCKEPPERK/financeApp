@@ -1,37 +1,40 @@
 package dev.kasckepperd.finance;
 
-import org.springframework.http.ResponseEntity;
+import jakarta.transaction.Transactional;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
+
 
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
+    private final CategoryRepository categoryRepository;
 
-    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, CategoryRepository categoryRepository) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
+        this.categoryRepository = categoryRepository;
     }
-
-    public Transaction NewTransaction(Transaction transaction, int accountId) {
+    @Transactional
+    public Transaction NewTransaction(Transaction transaction, int accountId,Integer categoryId) {
         Account account = accountRepository.findById(accountId).orElseThrow();
         BigDecimal newBalance = account.getBalance().add(transaction.getAmount());
+        if(categoryId!=null) {
+            Category category = categoryRepository.findById(categoryId).orElseThrow();
+            transaction.setCategory(category);
+        }
         if(newBalance.compareTo(BigDecimal.ZERO) >= 0) {
-            account.setBalance(transaction.getAccount().getBalance().add(transaction.getAmount()));
+            account.setBalance(newBalance);
             transaction.setAccount(account);
             accountRepository.save(account);
             return transactionRepository.save(transaction);
         }
         throw new IllegalArgumentException("No money!");
     }
-
+    @Transactional
     public void NewTransfer(BigDecimal amount, int accountId1, int accountId2) {
         Account account1 = accountRepository.findById(accountId1).orElseThrow();
         Account account2 = accountRepository.findById(accountId2).orElseThrow();
@@ -64,5 +67,9 @@ public class TransactionService {
 
     public List<Transaction> ShowTransactions(int accountId) {
         return transactionRepository.findByAccountId(accountId);
+    }
+
+    List<CategorySpending> getSpendingbyCategories(@Param("accountId") int accountId){
+        return transactionRepository.getSpendingbyCategories(accountId);
     }
 }
