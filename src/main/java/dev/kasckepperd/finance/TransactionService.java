@@ -4,6 +4,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -50,6 +53,7 @@ public class TransactionService {
         account2.setBalance(account2.getBalance().add(amount));
         accountRepository.save(account2);
 
+
         Transaction outgoing = new Transaction();
         outgoing.setAmount(amount.negate());
         outgoing.setDescription("Transfer");
@@ -71,5 +75,9 @@ public class TransactionService {
 
     List<CategorySpending> getSpendingbyCategories(@Param("accountId") int accountId){
         return transactionRepository.getSpendingbyCategories(accountId);
+    }
+
+    List<CategorySpending> getSpendingbyCategoriesMonth(@Param("accountId") int accountId, LocalDateTime start, LocalDateTime end){
+        return transactionRepository.getSpendingByCategoriesMonth(accountId, start, end);
     }
 }
